@@ -51,8 +51,9 @@ The selected mode is remembered across page reloads (`localStorage`).
 - Live ICY metadata — song/artist titles from the stream (both modes)
 - YouTube audio playback via yt-dlp (both modes)
 - Favorites and history (browser localStorage — no database needed)
-- Dark / light theme
+- Dark / light theme (light by default)
 - Responsive mobile-friendly grid
+- **🔧 Test button** — built-in diagnostics that check all required dependencies for the active playback mode
 
 ---
 
@@ -201,6 +202,7 @@ radioplay/
 │   ├── metadata.php    # Fetch ICY StreamTitle from stream (both modes)
 │   ├── volume.php      # wpctl volume control (server mode)
 │   ├── youtube.php     # yt-dlp → VLC or → streamUrl (both modes)
+│   ├── test.php        # Diagnostics endpoint (server mode checks)
 │   └── _kill_vlc.php   # Process kill helpers (internal)
 ├── install/
 │   ├── radioplay-vlc.sh      # VLC wrapper template (server mode)
