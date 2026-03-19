@@ -11,7 +11,7 @@ let metaInterval     = null;
 let lastMetaTitle    = null;
 let favorites = JSON.parse(localStorage.getItem('rp_favorites') || '{}');
 let history   = JSON.parse(localStorage.getItem('rp_history')   || '[]');
-let isDayMode = localStorage.getItem('rp_theme') === 'day';
+let isDayMode = localStorage.getItem('rp_theme') !== 'night';
 let playbackMode = localStorage.getItem('rp_playback_mode') || 'browser';
 
 // Migrate old favorites format {url: name} → {url: {name, url}}
@@ -54,7 +54,7 @@ const audioEl       = document.getElementById('audio-player');
 
 // ── Init ──
 document.addEventListener('DOMContentLoaded', () => {
-  if (isDayMode) applyTheme(true);
+  applyTheme(isDayMode);
 
   renderHome();
   initVolume();
