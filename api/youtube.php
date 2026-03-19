@@ -38,8 +38,8 @@ if (empty($streamUrl) || !preg_match('#^https?://#i', $streamUrl)) {
 
 $title = trim(shell_exec("$ytdlp --get-title --no-playlist $safeUrl 2>/dev/null"));
 if (empty($title)) $title = 'YouTube Audio';
-$title       = substr($title, 0, 150);
-$displayName = 'YouTube: ' . $title;
+$title       = substr($title, 0, 72);
+$displayName = 'YT: ' . $title;
 
 if ($mode === 'browser') {
     echo json_encode(['ok' => true, 'name' => $displayName, 'streamUrl' => $streamUrl]);

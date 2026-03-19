@@ -920,19 +920,93 @@ body.day .btn-test:hover { background: rgba(0,0,0,0.12); }
   .home-panels { grid-template-columns: 1fr 1fr; }
   .home-panel { max-height: calc(100vh - var(--header-h) - var(--player-h) - 30px); }
 }
-@media (max-width: 600px) {
-  :root { --header-h: 128px; }
-  .header-inner { flex-direction: column; gap: 8px; padding: 8px 0; }
-  .logo { display: none; }
-  .btn-theme { position: absolute; top: 10px; right: 10px; }
-  .filter-row { flex-wrap: wrap; }
-  .station-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 9px; }
-  .home-panels { grid-template-columns: 1fr; }
-  .home-panel { max-height: 60vh; }
-  #main { padding: 10px 12px; }
-  .btn-yt-toggle span:last-child { display: none; }
-  .vol-slider { width: 70px; }
+
+@media (max-width: 700px) {
+  /* Compact action buttons */
+  .btn-mode, .btn-test, .btn-yt-toggle {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
 }
+
+@media (max-width: 600px) {
+  :root { --header-h: 136px; }
+
+  .header-inner {
+    flex-direction: column;
+    gap: 5px;
+    padding: 6px 0;
+    position: relative;
+  }
+
+  .logo { display: none; }
+
+  /* Theme button floats top-right */
+  .btn-theme {
+    position: absolute;
+    top: 7px;
+    right: 0;
+  }
+
+  /* Search row: input shrinks, button stays */
+  .search-section { max-width: 100%; }
+  #search-q { font-size: 14px; }
+
+  /* Filter row: single scrollable line, no wrapping */
+  .filter-row {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 1px;
+    gap: 5px;
+  }
+  .filter-row::-webkit-scrollbar { display: none; }
+  .filter-row select {
+    flex-shrink: 0;
+    font-size: 12px;
+    padding: 5px 7px;
+    min-width: 0;
+  }
+
+  /* Action buttons row */
+  .header-actions {
+    margin-left: 0;
+    width: 100%;
+    gap: 5px;
+    justify-content: flex-start;
+  }
+  .btn-mode, .btn-test, .btn-yt-toggle {
+    font-size: 11px;
+    padding: 5px 9px;
+  }
+
+  /* Main */
+  #main { padding: 10px 10px; }
+
+  /* Grids */
+  .station-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+  .home-panels { grid-template-columns: 1fr; }
+  .home-panel { max-height: 55vh; }
+
+  /* Player bar — strip decorative elements */
+  .waveform   { display: none; }
+  .play-timer { display: none; }
+  .vol-val    { display: none; }
+  .vol-slider { width: 55px; }
+
+  /* Tighten player bar padding */
+  .player-bar { gap: 8px; padding: 0 10px; }
+}
+
+@media (max-width: 400px) {
+  :root { --header-h: 144px; }
+  /* On very small phones hide the Test button text, keep emoji */
+  .btn-test  { padding: 5px 7px; font-size: 11px; }
+  .btn-mode  { padding: 5px 7px; }
+  .vol-slider { width: 40px; }
+}
+
 @media (min-width: 1200px) {
   .station-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
 }
