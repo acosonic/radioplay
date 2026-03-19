@@ -495,20 +495,20 @@ function renderHome() {
   const tagsPanel = document.createElement('div');
   tagsPanel.className = 'home-panel';
   tagsPanel.innerHTML = `<div class="panel-header">🏷️ Browse by Genre</div>
-    <div class="panel-tags">${HOME_TAGS.map(t =>
-      `<button class="tag-chip" data-tag="${escHtml(t)}">${escHtml(t)}</button>`).join('')}</div>`;
+    <div class="panel-body"><div class="panel-tags">${HOME_TAGS.map(t =>
+      `<button class="tag-chip" data-tag="${escHtml(t)}">${escHtml(t)}</button>`).join('')}</div></div>`;
   tagsPanel.querySelectorAll('.tag-chip').forEach(btn =>
     btn.addEventListener('click', () => { filterTag.value = btn.dataset.tag; searchQ.value = ''; doSearch(); }));
 
   // Favorites panel
   const favPanel = document.createElement('div');
   favPanel.className = 'home-panel';
-  favPanel.innerHTML = `<div class="panel-header">♡ Favorites</div><div id="panel-favorites-list"></div>`;
+  favPanel.innerHTML = `<div class="panel-header">♡ Favorites</div><div class="panel-body"><div id="panel-favorites-list"></div></div>`;
 
   // History panel
   const histPanel = document.createElement('div');
   histPanel.className = 'home-panel';
-  histPanel.innerHTML = `<div class="panel-header">🕐 History</div><div id="panel-history-list"><p class="panel-empty">No history yet.</p></div>`;
+  histPanel.innerHTML = `<div class="panel-header">🕐 History</div><div class="panel-body"><div id="panel-history-list"><p class="panel-empty">No history yet.</p></div></div>`;
 
   grid.appendChild(tagsPanel);
   grid.appendChild(favPanel);
