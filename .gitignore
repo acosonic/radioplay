@@ -1,0 +1,10 @@
+# Local config — copy config.example.php to config.php and edit
+api/config.php
+
+# Data directory (unused, reserved for future use)
+data/
+
+# Runtime temp files
+/tmp/vlc*.json
+/tmp/vlc*.pid
+/tmp/vlc*.log

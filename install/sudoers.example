@@ -1,0 +1,11 @@
+# /etc/sudoers.d/radioplay
+# Replace MEDIA_USER with your Linux username (same as RP_MEDIA_USER in config.php).
+# Install with:
+#   sudo visudo -f /etc/sudoers.d/radioplay
+# or:
+#   sudo cp sudoers.example /etc/sudoers.d/radioplay
+#   sudo chmod 440 /etc/sudoers.d/radioplay
+
+www-data ALL=(MEDIA_USER) NOPASSWD: /usr/local/bin/radioplay-vlc
+www-data ALL=(MEDIA_USER) NOPASSWD: /usr/local/bin/radioplay-volume
+www-data ALL=(MEDIA_USER) NOPASSWD: /usr/bin/pkill

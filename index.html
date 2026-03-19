@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RadioPlay</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📻</text></svg>">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header id="header">
+    <div class="header-inner">
+      <div class="logo" id="btn-home" title="Home">
+        <span class="logo-icon">📻</span>
+        <span class="logo-text">RadioPlay</span>
+      </div>
+      <div class="search-section">
+        <div class="search-row">
+          <input type="text" id="search-q" placeholder="Search stations..." autocomplete="off">
+          <button id="btn-search">Search</button>
+        </div>
+        <div class="filter-row">
+          <select id="filter-tag">
+            <option value="">All Genres</option>
+            <option value="pop">Pop</option>
+            <option value="rock">Rock</option>
+            <option value="jazz">Jazz</option>
+            <option value="classical">Classical</option>
+            <option value="electronic">Electronic</option>
+            <option value="hip-hop">Hip-Hop</option>
+            <option value="news">News</option>
+            <option value="talk">Talk</option>
+            <option value="country">Country</option>
+            <option value="metal">Metal</option>
+            <option value="blues">Blues</option>
+            <option value="folk">Folk</option>
+            <option value="reggae">Reggae</option>
+          </select>
+          <select id="filter-country">
+            <option value="">All Countries</option>
+            <option value="US">United States</option>
+            <option value="GB">United Kingdom</option>
+            <option value="DE">Germany</option>
+            <option value="FR">France</option>
+            <option value="BA">Bosnia &amp; Herzegovina</option>
+            <option value="RS">Serbia</option>
+            <option value="HR">Croatia</option>
+            <option value="IT">Italy</option>
+            <option value="ES">Spain</option>
+            <option value="JP">Japan</option>
+            <option value="BR">Brazil</option>
+            <option value="AU">Australia</option>
+            <option value="CA">Canada</option>
+            <option value="NL">Netherlands</option>
+          </select>
+          <select id="filter-quality">
+            <option value="0">Any Quality</option>
+            <option value="64">64k+</option>
+            <option value="128">128k+</option>
+            <option value="192">192k+</option>
+            <option value="320">320k+</option>
+          </select>
+          <select id="filter-limit">
+            <option value="30">30 results</option>
+            <option value="60">60 results</option>
+            <option value="100">100 results</option>
+          </select>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="btn-mode" class="btn-mode active" title="Toggle playback mode">🖥 Server</button>
+        <button id="btn-yt-toggle" class="btn-yt-toggle" title="Play YouTube">🎬 YouTube</button>
+        <button id="btn-theme" class="btn-theme" title="Toggle day/night">🌙</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <div id="status-msg" class="status-msg hidden"></div>
+    <div id="station-grid" class="station-grid"></div>
+  </main>
+
+  <!-- YouTube overlay -->
+  <div id="yt-overlay" class="yt-overlay hidden">
+    <div class="yt-overlay-inner">
+      <span class="yt-overlay-icon">🎬</span>
+      <input type="text" id="yt-url" placeholder="Paste YouTube URL..." autocomplete="off" spellcheck="false">
+      <button id="btn-yt-play" class="btn-yt-play">▶ Play</button>
+      <button id="btn-yt-close" class="btn-yt-close" title="Close">✕</button>
+    </div>
+  </div>
+
+  <!-- Player bar -->
+  <div id="player-bar" class="player-bar">
+    <button id="btn-stop" class="btn-stop" disabled>■</button>
+
+    <div class="np-logo-wrap">
+      <img id="np-favicon" class="np-favicon hidden" src="" alt="">
+      <span id="np-favicon-ph" class="np-favicon-ph">♫</span>
+    </div>
+
+    <div id="now-playing" class="now-playing">
+      <span class="np-idle">No station playing</span>
+    </div>
+
+    <div id="play-timer" class="play-timer"></div>
+
+    <div class="waveform" id="waveform">
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
+
+    <div class="volume-wrap">
+      <span class="vol-icon" id="vol-icon">🔊</span>
+      <input type="range" id="vol-slider" class="vol-slider" min="0" max="150" value="78" step="1">
+      <span class="vol-val" id="vol-val">78%</span>
+    </div>
+  </div>
+
+  <audio id="audio-player" preload="none"></audio>
+  <script src="js/app.js"></script>
+</body>
+</html>
