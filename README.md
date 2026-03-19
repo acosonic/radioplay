@@ -1,4 +1,4 @@
-# RadioPlay
+# 📻 RadioPlay
 
 A self-hosted web radio & YouTube audio player. Searches 30 000+ stations via the [Radio Browser API](https://www.radio-browser.info/) and supports two distinct playback modes.
 
