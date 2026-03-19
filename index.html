@@ -69,6 +69,7 @@
       </div>
       <div class="header-actions">
         <button id="btn-mode" class="btn-mode active" title="Toggle playback mode">🖥 Server</button>
+        <button id="btn-test" class="btn-test" title="Run diagnostics">🔧 Test</button>
         <button id="btn-yt-toggle" class="btn-yt-toggle" title="Play YouTube">🎬 YouTube</button>
         <button id="btn-theme" class="btn-theme" title="Toggle day/night">🌙</button>
       </div>
@@ -79,6 +80,19 @@
     <div id="status-msg" class="status-msg hidden"></div>
     <div id="station-grid" class="station-grid"></div>
   </main>
+
+  <!-- Diagnostics modal -->
+  <div id="test-modal" class="test-modal hidden">
+    <div class="test-modal-inner">
+      <div class="test-modal-header">
+        <span id="test-modal-title">🔧 Diagnostics</span>
+        <button id="btn-test-close" class="btn-test-close" title="Close">✕</button>
+      </div>
+      <div id="test-modal-body" class="test-modal-body">
+        <div class="test-running"><div class="spinner"></div> Running tests…</div>
+      </div>
+    </div>
+  </div>
 
   <!-- YouTube overlay -->
   <div id="yt-overlay" class="yt-overlay hidden">

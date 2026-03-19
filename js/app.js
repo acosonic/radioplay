@@ -12,7 +12,7 @@ let lastMetaTitle    = null;
 let favorites = JSON.parse(localStorage.getItem('rp_favorites') || '{}');
 let history   = JSON.parse(localStorage.getItem('rp_history')   || '[]');
 let isDayMode = localStorage.getItem('rp_theme') === 'day';
-let playbackMode = localStorage.getItem('rp_playback_mode') || 'server';
+let playbackMode = localStorage.getItem('rp_playback_mode') || 'browser';
 
 // Migrate old favorites format {url: name} → {url: {name, url}}
 Object.keys(favorites).forEach(url => {
@@ -46,6 +46,10 @@ const filterCountry = document.getElementById('filter-country');
 const filterQuality = document.getElementById('filter-quality');
 const filterLimit   = document.getElementById('filter-limit');
 const btnMode       = document.getElementById('btn-mode');
+const btnTest       = document.getElementById('btn-test');
+const testModal     = document.getElementById('test-modal');
+const testModalBody = document.getElementById('test-modal-body');
+const btnTestClose  = document.getElementById('btn-test-close');
 const audioEl       = document.getElementById('audio-player');
 
 // ── Init ──
@@ -72,6 +76,9 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   btnMode.addEventListener('click', toggleMode);
+  btnTest.addEventListener('click', openTestModal);
+  btnTestClose.addEventListener('click', () => testModal.classList.add('hidden'));
+  testModal.addEventListener('click', e => { if (e.target === testModal) testModal.classList.add('hidden'); });
 
   audioEl.addEventListener('error', () => { showMsg('Stream error.', 'error'); clearPlaying(); });
   audioEl.addEventListener('ended', () => clearPlaying());
@@ -668,4 +675,98 @@ function firstLetter(name) { return name ? name.charAt(0).toUpperCase() : '?'; }
 function flagEmoji(code) {
   if (!code || code.length !== 2) return '';
   return [...code.toUpperCase()].map(c => String.fromCodePoint(0x1F1E6 - 65 + c.charCodeAt(0))).join('');
+}
+
+// ── Diagnostics ──
+async function openTestModal() {
+  testModal.classList.remove('hidden');
+  testModalBody.innerHTML = '<div class="test-running"><div class="spinner"></div> Running tests…</div>';
+  const results = playbackMode === 'browser' ? await runBrowserTests() : await runServerTests();
+  renderTestResults(results);
+}
+
+async function runBrowserTests() {
+  const results = [];
+
+  // Audio element support
+  const audioSupport = !!window.HTMLAudioElement;
+  results.push({ label: 'HTML5 Audio supported', ok: audioSupport });
+
+  // Fetch API
+  results.push({ label: 'Fetch API available', ok: typeof fetch === 'function' });
+
+  // LocalStorage
+  let lsOk = false;
+  try { localStorage.setItem('rp_test', '1'); localStorage.removeItem('rp_test'); lsOk = true; } catch {}
+  results.push({ label: 'LocalStorage available', ok: lsOk });
+
+  // MP3/AAC support
+  const audio = new Audio();
+  const mp3 = audio.canPlayType('audio/mpeg') !== '';
+  const aac = audio.canPlayType('audio/aac') !== '';
+  results.push({ label: 'MP3 decode support', ok: mp3, detail: audio.canPlayType('audio/mpeg') || 'no' });
+  results.push({ label: 'AAC decode support', ok: aac, detail: audio.canPlayType('audio/aac') || 'no' });
+
+  // Radio Browser API reachable
+  try {
+    const r = await fetch('https://all.api.radio-browser.info/json/stats', { signal: AbortSignal.timeout(6000) });
+    results.push({ label: 'Radio Browser API reachable', ok: r.ok, detail: r.ok ? `HTTP ${r.status}` : `HTTP ${r.status}` });
+  } catch (e) {
+    results.push({ label: 'Radio Browser API reachable', ok: false, detail: e.message });
+  }
+
+  // Local search API (PHP backend up at all)
+  try {
+    const r = await fetch(`${BASE}/search.php?q=test&limit=1`, { signal: AbortSignal.timeout(6000) });
+    results.push({ label: 'Local search API (PHP)', ok: r.ok, detail: r.ok ? `HTTP ${r.status}` : `HTTP ${r.status}` });
+  } catch (e) {
+    results.push({ label: 'Local search API (PHP)', ok: false, detail: e.message });
+  }
+
+  return results;
+}
+
+async function runServerTests() {
+  const results = [];
+
+  // Local search API
+  try {
+    const r = await fetch(`${BASE}/search.php?q=test&limit=1`, { signal: AbortSignal.timeout(6000) });
+    results.push({ label: 'Local search API (PHP)', ok: r.ok, detail: r.ok ? `HTTP ${r.status}` : `HTTP ${r.status}` });
+  } catch (e) {
+    results.push({ label: 'Local search API (PHP)', ok: false, detail: e.message });
+  }
+
+  // Server diagnostics endpoint
+  try {
+    const r = await fetch(`${BASE}/test.php`, { signal: AbortSignal.timeout(15000) });
+    if (!r.ok) {
+      results.push({ label: 'Server test endpoint', ok: false, detail: `HTTP ${r.status}` });
+      return results;
+    }
+    const data = await r.json();
+    results.push({ label: 'Server test endpoint', ok: true });
+    (data.tests || []).forEach(t => results.push(t));
+  } catch (e) {
+    results.push({ label: 'Server test endpoint', ok: false, detail: e.message });
+  }
+
+  return results;
+}
+
+function renderTestResults(results) {
+  const allOk = results.every(r => r.ok);
+  const modeLabel = playbackMode === 'browser' ? '🔊 Browser mode' : '🖥 Server mode';
+  let html = `<div class="test-mode-label">${modeLabel}</div>`;
+  html += '<ul class="test-list">';
+  for (const r of results) {
+    const icon = r.ok ? '<span class="test-ok">✓</span>' : '<span class="test-fail">✗</span>';
+    const detail = r.detail ? `<span class="test-detail">${escHtml(r.detail)}</span>` : '';
+    html += `<li class="test-item">${icon} <span class="test-label">${escHtml(r.label)}</span>${detail}</li>`;
+  }
+  html += '</ul>';
+  html += allOk
+    ? '<div class="test-summary ok">✓ All tests passed</div>'
+    : '<div class="test-summary fail">✗ Some tests failed — see details above</div>';
+  testModalBody.innerHTML = html;
 }
