@@ -1,10 +1,35 @@
 # RadioPlay
 
-A self-hosted web radio & YouTube audio player. Searches 30 000+ stations via the [Radio Browser API](https://www.radio-browser.info/), plays them through VLC on the server, and displays live ICY stream metadata (now-playing song titles).
-
-Supports YouTube URLs via yt-dlp → VLC. Runs entirely on a headless Linux server with PipeWire audio.
+A self-hosted web radio & YouTube audio player. Searches 30 000+ stations via the [Radio Browser API](https://www.radio-browser.info/) and supports two distinct playback modes.
 
 > Inspired by [RompR](https://fatg3erman.github.io/RompR/) — a great self-hosted music player for MPD/Mopidy.
+
+---
+
+## Two Playback Modes
+
+RadioPlay can play audio in two ways, switchable at any time via the **🖥 Server / 🔊 Browser** toggle in the header.
+
+### 🔊 Browser Mode (no server setup required)
+
+Audio streams **directly in your browser** using the HTML5 `<audio>` element. The server acts only as a PHP backend for searching stations and fetching ICY metadata — it plays no audio itself.
+
+- Works out of the box on any web host with PHP
+- No VLC, no PipeWire, no sudo rules needed
+- Volume is local to your browser tab (0–100%)
+- Ideal for remote / guest listening from any device
+
+### 🖥 Server Mode (VLC on the server)
+
+Audio plays through **VLC on the server machine** — through its speakers or headphones. The browser is just a remote control.
+
+- Requires VLC, PipeWire/WirePlumber, and sudo configuration (see Installation)
+- Volume controls the server's system audio output (supports 0–150%)
+- Ideal for home server / local listening setups
+
+The selected mode is remembered across page reloads (`localStorage`).
+
+---
 
 ## Screenshots
 
@@ -16,36 +41,47 @@ Supports YouTube URLs via yt-dlp → VLC. Runs entirely on a headless Linux serv
 
 ![Home screen with player bar](docs/screenshot-home.png)
 
+---
+
 ## Features
 
 - Search radio stations by name, genre, country, bitrate
-- One-click server-side playback via VLC (no browser audio tab required)
-- Live ICY metadata — song/artist titles from the stream
-- YouTube audio playback via yt-dlp
-- Volume control from the browser (via WirePlumber/wpctl)
-- Playback history (SQLite)
+- **Browser mode** — HTML5 audio playback, zero server-side audio dependencies
+- **Server mode** — VLC server-side playback with system volume control
+- Live ICY metadata — song/artist titles from the stream (both modes)
+- YouTube audio playback via yt-dlp (both modes)
 - Favorites and history (browser localStorage — no database needed)
 - Dark / light theme
 - Responsive mobile-friendly grid
 
+---
+
 ## Requirements
+
+### Browser Mode (minimal)
 
 | Dependency | Notes |
 |---|---|
-| PHP 8.1+ | With `posix` extension |
+| PHP 8.1+ | With `curl` extension |
 | Apache / nginx | With PHP-FPM or mod_php |
+| yt-dlp | Optional — only for YouTube support |
+
+### Server Mode (additional)
+
+| Dependency | Notes |
+|---|---|
 | VLC (`cvlc`) | `sudo apt install vlc` |
 | PipeWire + WirePlumber | Running as your audio user |
-| yt-dlp | For YouTube support |
-| SQLite3 | Not required — history and favorites use browser localStorage |
+| sudo | For `www-data` to launch VLC as audio user |
+
+---
 
 ## Installation
 
-### 1. Clone / copy the app
+### 1. Clone the app
 
 ```bash
-git clone https://github.com/yourname/radioplay.git /var/www/html/radioplay
-# or just copy the folder to your web root
+git clone https://github.com/acosonic/radioplay.git /var/www/html/radioplay
 ```
 
 ### 2. Configure the app
@@ -55,9 +91,27 @@ cp api/config.example.php api/config.php
 nano api/config.php
 ```
 
-Set `RP_MEDIA_USER` to the Linux user that runs your audio session (PipeWire/PulseAudio). All other values can stay at their defaults unless your paths differ.
+For **Browser Mode** you only need to set the base paths (defaults are fine for most setups).
 
-### 3. Create the wrapper scripts
+For **Server Mode** also set `RP_MEDIA_USER` to the Linux user that runs your audio session (PipeWire/PulseAudio).
+
+### 3. Install yt-dlp (optional, for YouTube support)
+
+```bash
+sudo curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp \
+     -o /usr/local/bin/yt-dlp
+sudo chmod 755 /usr/local/bin/yt-dlp
+```
+
+Update `RP_YTDLP_PATH` in `api/config.php` if you install it elsewhere.
+
+**This is all you need for Browser Mode.** Skip to step 7 (web server config) if you only want browser-side playback.
+
+---
+
+### Server Mode — additional setup
+
+#### 4. Create the wrapper scripts
 
 RadioPlay's PHP backend (running as `www-data`) needs to launch VLC and control volume as your audio user. Two small wrapper scripts handle this.
 
@@ -65,7 +119,6 @@ RadioPlay's PHP backend (running as `www-data`) needs to launch VLC and control 
 # Find your audio user's UID
 id youruser   # e.g. uid=1000
 
-# Edit the templates
 cp install/radioplay-vlc.sh /tmp/radioplay-vlc
 sed -i 's/MEDIA_USER/youruser/g; s/MEDIA_UID/1000/g' /tmp/radioplay-vlc
 sudo cp /tmp/radioplay-vlc /usr/local/bin/radioplay-vlc
@@ -77,35 +130,28 @@ sudo cp /tmp/radioplay-volume /usr/local/bin/radioplay-volume
 sudo chmod 755 /usr/local/bin/radioplay-volume
 ```
 
-### 4. Configure sudo
+#### 5. Configure sudo
 
 ```bash
 sudo cp install/sudoers.example /etc/sudoers.d/radioplay
 sudo chmod 440 /etc/sudoers.d/radioplay
 sudo sed -i 's/MEDIA_USER/youruser/g' /etc/sudoers.d/radioplay
-# Verify syntax
 sudo visudo -c
 ```
 
-This allows `www-data` to run the two wrappers and `pkill` as your audio user, without a password.
+This allows `www-data` to run the two wrappers and `pkill` as your audio user without a password.
 
-### 5. Install yt-dlp (optional, for YouTube)
+#### 6. Verify Server Mode
 
 ```bash
-# Latest version from the project's GitHub releases:
-sudo curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp \
-     -o /usr/local/bin/yt-dlp
-sudo chmod 755 /usr/local/bin/yt-dlp
-
-# Or via apt (may be older):
-sudo apt install yt-dlp
+sudo -u www-data sudo -u youruser /usr/local/bin/radioplay-vlc --version
 ```
 
-Update `RP_YTDLP_PATH` in `api/config.php` if you install it elsewhere.
+---
 
-### 6. Web server
+### 7. Web server
 
-**Apache** — enable `mod_rewrite` if you want clean URLs (not required). Example vhost:
+**Apache:**
 
 ```apache
 <VirtualHost *:80>
@@ -127,8 +173,7 @@ server {
     root /var/www/html/radioplay;
     index index.html;
 
-    location /api/ {
-        try_files $uri $uri/ =404;
+    location ~ \.php$ {
         fastcgi_pass unix:/run/php/php8.1-fpm.sock;
         fastcgi_index index.php;
         include fastcgi_params;
@@ -137,17 +182,7 @@ server {
 }
 ```
 
-### 8. Verify
-
-```bash
-# Check VLC works as your audio user
-sudo -u www-data sudo -u youruser /usr/local/bin/radioplay-vlc --version
-
-# Open the app in a browser
-http://yourserver/radioplay/
-```
-
-Search for a station, hit Play, and verify you hear audio.
+---
 
 ## Architecture
 
@@ -160,37 +195,47 @@ radioplay/
 │   ├── config.php      # ← Your local config (git-ignored)
 │   ├── config.example.php
 │   ├── search.php      # Proxy to Radio Browser API
-│   ├── play.php        # Kill old VLC, start new stream
-│   ├── stop.php        # Kill VLC
-│   ├── status.php      # Is VLC alive? What's playing?
-│   ├── metadata.php    # Fetch ICY StreamTitle from stream
-│   ├── volume.php      # wpctl volume control
-│   ├── youtube.php     # yt-dlp → VLC
+│   ├── play.php        # Kill old VLC, start new stream (server mode)
+│   ├── stop.php        # Kill VLC (server mode)
+│   ├── status.php      # Is VLC alive? What's playing? (server mode)
+│   ├── metadata.php    # Fetch ICY StreamTitle from stream (both modes)
+│   ├── volume.php      # wpctl volume control (server mode)
+│   ├── youtube.php     # yt-dlp → VLC or → streamUrl (both modes)
 │   └── _kill_vlc.php   # Process kill helpers (internal)
 ├── install/
-│   ├── radioplay-vlc.sh      # VLC wrapper template
-│   ├── radioplay-volume.sh   # Volume wrapper template
-│   └── sudoers.example       # sudo rules template
+│   ├── radioplay-vlc.sh      # VLC wrapper template (server mode)
+│   ├── radioplay-volume.sh   # Volume wrapper template (server mode)
+│   └── sudoers.example       # sudo rules template (server mode)
 └── .gitignore
 ```
 
 ## How it works
 
-1. **Search** — PHP proxies queries to the public Radio Browser API and returns station metadata (name, URL, bitrate, country, tags, favicon).
+### Browser Mode
+1. **Search** — PHP proxies queries to Radio Browser API.
+2. **Play** — JS sets `<audio>.src = streamUrl` and calls `.play()` directly in the browser.
+3. **ICY Metadata** — `metadata.php?url=<stream>` opens a raw TCP socket to the stream server-side and parses `StreamTitle`, returning it as JSON. Polled every 25 seconds.
+4. **YouTube** — `youtube.php` runs `yt-dlp -g` to extract the direct audio URL and returns it as `streamUrl`; the browser plays it via `<audio>`.
+5. **Volume** — `audioEl.volume` (0–1), controlled by the slider (max 100%).
 
-2. **Play** — PHP kills any existing VLC process, writes `/tmp/vlcnow.json`, then runs `sudo -u MEDIA_USER radioplay-vlc --no-video --quiet <url>` in the background. The PID is saved to `/tmp/vlcplay.pid`.
-
-3. **Status** — Polling checks that the PID is still alive via `posix_kill($pid, 0)`.
-
-4. **ICY Metadata** — `metadata.php` opens a raw TCP/SSL socket to the stream, sends `Icy-MetaData: 1`, reads the `icy-metaint` header, skips the audio bytes, and parses `StreamTitle` from the metadata block. Polled every 25 seconds.
-
+### Server Mode
+1. **Search** — same as above.
+2. **Play** — PHP kills any existing VLC process, writes `/tmp/vlcnow.json`, then runs `sudo -u MEDIA_USER radioplay-vlc --no-video --quiet <url>` in the background.
+3. **Status** — polling checks that the PID is still alive via `posix_kill($pid, 0)`.
+4. **ICY Metadata** — same TCP socket approach, but reads the URL from `/tmp/vlcnow.json`.
 5. **Volume** — `wpctl set-volume` targets the VLC node by PID in the PipeWire graph.
+6. **YouTube** — `yt-dlp -g` extracts the direct audio URL, passed to VLC.
 
-6. **YouTube** — `yt-dlp -g` extracts the direct audio URL, which is then played via VLC exactly like a radio stream.
+---
 
 ## Troubleshooting
 
-**No audio after clicking Play**
+**No audio in Browser Mode**
+- Check browser console for CORS or mixed-content errors
+- Some streams require HTTPS — try a different station
+- AAC/HLS streams play fine; some exotic codecs may not be supported by the browser
+
+**No audio in Server Mode after clicking Play**
 - Check PipeWire is running: `systemctl --user status pipewire` (as your audio user)
 - Check VLC is launching: `cat /tmp/vlcplay.log`
 - Verify sudo works: `sudo -u www-data sudo -u youruser /usr/local/bin/radioplay-vlc --version`
@@ -199,13 +244,14 @@ radioplay/
 - Update yt-dlp: `sudo yt-dlp -U` or re-download the binary
 - Test manually: `yt-dlp -g --format 'bestaudio/best' 'https://youtube.com/watch?v=...'`
 
-**stop.php returns 500**
-- PHP needs the `posix` extension: `php -m | grep posix`
-- Install if missing: `sudo apt install php-common` (usually included)
-
 **ICY metadata not showing**
 - Many AAC/HLS streams don't support ICY metadata — this is expected
 - Icecast and classic Shoutcast streams (MP3) support it
+
+**stop.php returns 500 (Server Mode)**
+- PHP needs the `posix` extension: `php -m | grep posix`
+
+---
 
 ## License
 
