@@ -50,6 +50,9 @@ const btnTest       = document.getElementById('btn-test');
 const testModal     = document.getElementById('test-modal');
 const testModalBody = document.getElementById('test-modal-body');
 const btnTestClose  = document.getElementById('btn-test-close');
+const btnAbout      = document.getElementById('btn-about');
+const aboutModal    = document.getElementById('about-modal');
+const btnAboutClose = document.getElementById('btn-about-close');
 const audioEl       = document.getElementById('audio-player');
 
 // ── Init ──
@@ -79,6 +82,10 @@ document.addEventListener('DOMContentLoaded', () => {
   btnTest.addEventListener('click', openTestModal);
   btnTestClose.addEventListener('click', () => testModal.classList.add('hidden'));
   testModal.addEventListener('click', e => { if (e.target === testModal) testModal.classList.add('hidden'); });
+
+  btnAbout.addEventListener('click', () => aboutModal.classList.remove('hidden'));
+  btnAboutClose.addEventListener('click', () => aboutModal.classList.add('hidden'));
+  aboutModal.addEventListener('click', e => { if (e.target === aboutModal) aboutModal.classList.add('hidden'); });
 
   audioEl.addEventListener('error', () => { showMsg('Stream error.', 'error'); clearPlaying(); });
   audioEl.addEventListener('ended', () => clearPlaying());
@@ -767,6 +774,6 @@ function renderTestResults(results) {
   html += '</ul>';
   html += allOk
     ? '<div class="test-summary ok">✓ All tests passed</div>'
-    : '<div class="test-summary fail">✗ Some tests failed — see details above</div>';
+    : '<div class="test-summary fail">✗ Some tests failed — see details above<br><a class="test-install-link" href="README.md#installation" target="_blank">📖 View install instructions</a></div>';
   testModalBody.innerHTML = html;
 }

@@ -71,6 +71,7 @@
         <button id="btn-mode" class="btn-mode active" title="Toggle playback mode">🖥 Server</button>
         <button id="btn-test" class="btn-test" title="Run diagnostics">🔧 Test</button>
         <button id="btn-yt-toggle" class="btn-yt-toggle" title="Play YouTube">🎬 YouTube</button>
+        <button id="btn-about" class="btn-about" title="About RadioPlay">ℹ️</button>
         <button id="btn-theme" class="btn-theme" title="Toggle day/night">🌙</button>
       </div>
     </div>
@@ -80,6 +81,37 @@
     <div id="status-msg" class="status-msg hidden"></div>
     <div id="station-grid" class="station-grid"></div>
   </main>
+
+  <!-- About modal -->
+  <div id="about-modal" class="test-modal hidden">
+    <div class="test-modal-inner">
+      <div class="test-modal-header">
+        <span>📻 About RadioPlay</span>
+        <button id="btn-about-close" class="btn-test-close" title="Close">✕</button>
+      </div>
+      <div class="test-modal-body">
+        <div class="about-content">
+          <div class="about-logo">📻</div>
+          <h2 class="about-title">RadioPlay</h2>
+          <p class="about-desc">A self-hosted web radio &amp; YouTube player. Search thousands of stations worldwide, save favorites, and stream directly through your browser or server.</p>
+          <div class="about-features">
+            <div class="about-feature">🌍 Radio Browser API — 30,000+ stations</div>
+            <div class="about-feature">🎬 YouTube streaming via yt-dlp</div>
+            <div class="about-feature">🖥 Server mode (VLC) &amp; Browser mode</div>
+            <div class="about-feature">⭐ Favorites &amp; history (local storage)</div>
+            <div class="about-feature">🎚 Volume control up to 150%</div>
+          </div>
+          <div class="about-stack">
+            <span class="about-tag">PHP 8.4</span>
+            <span class="about-tag">VLC / cvlc</span>
+            <span class="about-tag">PipeWire</span>
+            <span class="about-tag">yt-dlp</span>
+            <span class="about-tag">Vanilla JS</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Diagnostics modal -->
   <div id="test-modal" class="test-modal hidden">

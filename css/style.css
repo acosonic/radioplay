@@ -914,6 +914,45 @@ body.day .btn-test:hover { background: rgba(0,0,0,0.12); }
 }
 .test-summary.ok   { background: rgba(74,222,128,0.12); color: #4ade80; border: 1px solid rgba(74,222,128,0.25); }
 .test-summary.fail { background: rgba(248,113,113,0.12); color: #f87171; border: 1px solid rgba(248,113,113,0.25); }
+.test-install-link {
+  display: inline-block; margin-top: 8px;
+  font-size: 12px; color: var(--accent);
+  text-decoration: none; font-weight: 600;
+}
+.test-install-link:hover { text-decoration: underline; }
+
+/* ── About modal ── */
+.btn-about {
+  background: none; border: 1px solid var(--glass-border);
+  color: var(--text); border-radius: 8px;
+  padding: 6px 10px; font-size: 15px; cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-about:hover { background: rgba(255,255,255,0.08); }
+.about-content { text-align: center; padding: 8px 0; }
+.about-logo { font-size: 52px; line-height: 1; margin-bottom: 10px; }
+.about-title { font-size: 22px; font-weight: 700; color: var(--accent); margin: 0 0 10px; }
+.about-desc { font-size: 13px; color: var(--text2); line-height: 1.6; margin: 0 0 20px; }
+.about-features {
+  display: flex; flex-direction: column; gap: 7px;
+  text-align: left; margin-bottom: 20px;
+}
+.about-feature {
+  font-size: 13px; color: var(--text);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px; padding: 7px 12px;
+}
+.about-stack {
+  display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;
+}
+.about-tag {
+  font-size: 11px; font-weight: 600;
+  background: rgba(108,99,255,0.15);
+  border: 1px solid rgba(108,99,255,0.35);
+  color: var(--accent); border-radius: 20px;
+  padding: 3px 10px;
+}
 
 /* ── Responsive ── */
 @media (max-width: 900px) {
@@ -922,7 +961,6 @@ body.day .btn-test:hover { background: rgba(0,0,0,0.12); }
 }
 
 @media (max-width: 700px) {
-  /* Compact action buttons */
   .btn-mode, .btn-test, .btn-yt-toggle {
     font-size: 12px;
     padding: 6px 10px;
@@ -930,35 +968,38 @@ body.day .btn-test:hover { background: rgba(0,0,0,0.12); }
 }
 
 @media (max-width: 600px) {
-  :root { --header-h: 136px; }
+  /* Header: 3 rows — search | filters | actions+theme */
+  :root { --header-h: 142px; }
 
   .header-inner {
     flex-direction: column;
-    gap: 5px;
-    padding: 6px 0;
-    position: relative;
+    align-items: stretch;
+    gap: 6px;
+    padding: 7px 0;
   }
 
   .logo { display: none; }
 
-  /* Theme button floats top-right */
+  /* Theme button stays in .header-actions flow (not absolute) */
   .btn-theme {
-    position: absolute;
-    top: 7px;
-    right: 0;
+    position: static;
+    margin-left: auto;   /* push to far right inside header-actions */
   }
 
-  /* Search row: input shrinks, button stays */
+  /* Search section full width */
   .search-section { max-width: 100%; }
-  #search-q { font-size: 14px; }
 
-  /* Filter row: single scrollable line, no wrapping */
+  /* Search row: input stretches, button fixed width */
+  .search-row { gap: 7px; }
+  #search-q   { font-size: 14px; }
+  #btn-search { width: 90px; }
+
+  /* Filter row: single scrollable line */
   .filter-row {
     flex-wrap: nowrap;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
-    padding-bottom: 1px;
     gap: 5px;
   }
   .filter-row::-webkit-scrollbar { display: none; }
@@ -966,15 +1007,13 @@ body.day .btn-test:hover { background: rgba(0,0,0,0.12); }
     flex-shrink: 0;
     font-size: 12px;
     padding: 5px 7px;
-    min-width: 0;
   }
 
-  /* Action buttons row */
+  /* Actions row: left-aligned + theme on far right */
   .header-actions {
     margin-left: 0;
     width: 100%;
     gap: 5px;
-    justify-content: flex-start;
   }
   .btn-mode, .btn-test, .btn-yt-toggle {
     font-size: 11px;
@@ -986,24 +1025,20 @@ body.day .btn-test:hover { background: rgba(0,0,0,0.12); }
 
   /* Grids */
   .station-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
-  .home-panels { grid-template-columns: 1fr; }
-  .home-panel { max-height: 55vh; }
+  .home-panels  { grid-template-columns: 1fr; }
+  .home-panel   { max-height: 55vh; }
 
-  /* Player bar — strip decorative elements */
+  /* Player bar: hide decorative elements */
   .waveform   { display: none; }
   .play-timer { display: none; }
   .vol-val    { display: none; }
   .vol-slider { width: 55px; }
-
-  /* Tighten player bar padding */
   .player-bar { gap: 8px; padding: 0 10px; }
 }
 
 @media (max-width: 400px) {
-  :root { --header-h: 144px; }
-  /* On very small phones hide the Test button text, keep emoji */
-  .btn-test  { padding: 5px 7px; font-size: 11px; }
-  .btn-mode  { padding: 5px 7px; }
+  :root { --header-h: 148px; }
+  .btn-test, .btn-mode, .btn-yt-toggle { padding: 5px 7px; font-size: 11px; }
   .vol-slider { width: 40px; }
 }
 
