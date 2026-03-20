@@ -774,6 +774,6 @@ function renderTestResults(results) {
   html += '</ul>';
   html += allOk
     ? '<div class="test-summary ok">✓ All tests passed</div>'
-    : '<div class="test-summary fail">✗ Some tests failed — see details above<br><a class="test-install-link" href="README.md#installation" target="_blank">📖 View install instructions</a></div>';
+    : '<div class="test-summary fail">✗ Some tests failed — see details above<br><a class="test-install-link" href="https://github.com/acosonic/radioplay#installation" target="_blank">📖 View install instructions</a></div>';
   testModalBody.innerHTML = html;
 }
