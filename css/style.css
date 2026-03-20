@@ -975,34 +975,43 @@ body.day .btn-test:hover { background: rgba(0,0,0,0.12); }
 }
 
 @media (max-width: 600px) {
-  /* Header: 3 rows — search | filters | actions+theme */
-  :root { --header-h: 142px; }
+  :root { --header-h: 130px; }
 
+  /* Grid layout: logo | search / logo | filters / actions */
   .header-inner {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 6px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto auto;
+    grid-template-areas:
+      "logo search"
+      "logo filters"
+      "actions actions";
+    gap: 5px 10px;
     padding: 7px 0;
+    align-items: center;
   }
 
-  .logo { display: none; }
-
-  /* Theme button stays in .header-actions flow (not absolute) */
-  .btn-theme {
-    position: static;
-    margin-left: auto;   /* push to far right inside header-actions */
+  /* Logo: icon only, centered in its column */
+  .logo {
+    grid-area: logo;
+    flex-direction: column;
+    align-self: stretch;
+    justify-content: center;
+    padding: 4px 6px;
+    gap: 2px;
   }
+  .logo-icon { font-size: 26px; }
+  .logo-text { display: none; }
 
-  /* Search section full width */
-  .search-section { max-width: 100%; }
-
-  /* Search row: input stretches, button fixed width */
-  .search-row { gap: 7px; }
+  /* Flatten search-section so its children join the grid */
+  .search-section { display: contents; }
+  .search-row { grid-area: search; gap: 7px; }
   #search-q   { font-size: 14px; }
-  #btn-search { width: 90px; }
+  #btn-search { width: 80px; flex-shrink: 0; }
 
   /* Filter row: single scrollable line */
   .filter-row {
+    grid-area: filters;
     flex-wrap: nowrap;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
@@ -1016,26 +1025,28 @@ body.day .btn-test:hover { background: rgba(0,0,0,0.12); }
     padding: 5px 7px;
   }
 
-  /* Actions row: left-aligned + theme on far right */
+  /* Actions row: full width, wrapping */
   .header-actions {
+    grid-area: actions;
     margin-left: 0;
-    width: 100%;
     gap: 5px;
+    flex-wrap: wrap;
   }
-  .btn-mode, .btn-test, .btn-yt-toggle {
+  .btn-mode, .btn-test, .btn-yt-toggle, .btn-about {
     font-size: 11px;
     padding: 5px 9px;
   }
+  .btn-theme { margin-left: auto; }
 
   /* Main */
-  #main { padding: 10px 10px; }
+  #main { padding: 10px; }
 
   /* Grids */
   .station-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
   .home-panels  { grid-template-columns: 1fr; }
   .home-panel   { max-height: 55vh; }
 
-  /* Player bar: hide decorative elements */
+  /* Player bar */
   .waveform   { display: none; }
   .play-timer { display: none; }
   .vol-val    { display: none; }
@@ -1044,8 +1055,8 @@ body.day .btn-test:hover { background: rgba(0,0,0,0.12); }
 }
 
 @media (max-width: 400px) {
-  :root { --header-h: 148px; }
-  .btn-test, .btn-mode, .btn-yt-toggle { padding: 5px 7px; font-size: 11px; }
+  :root { --header-h: 138px; }
+  .btn-test, .btn-mode, .btn-yt-toggle, .btn-about { padding: 5px 7px; font-size: 11px; }
   .vol-slider { width: 40px; }
 }
 
