@@ -511,6 +511,19 @@ function renderHome() {
   const favPanel = document.createElement('div');
   favPanel.className = 'home-panel';
   favPanel.innerHTML = `<div class="panel-header">♡ Favorites</div><div class="panel-body"><div id="panel-favorites-list"></div></div>`;
+  favPanel.addEventListener('dragover', e => { e.preventDefault(); favPanel.classList.add('drop-target'); });
+  favPanel.addEventListener('dragleave', () => favPanel.classList.remove('drop-target'));
+  favPanel.addEventListener('drop', e => {
+    e.preventDefault();
+    favPanel.classList.remove('drop-target');
+    try {
+      const item = JSON.parse(e.dataTransfer.getData('application/json'));
+      if (!item.url || favorites[item.url]) return;
+      favorites[item.url] = { name: item.name, url: item.url, favicon: item.favicon || '', tags: '', country: '', countrycode: '' };
+      saveFavorites();
+      renderFavoritesPanel(document.getElementById('panel-favorites-list'));
+    } catch {}
+  });
 
   // History panel
   const histPanel = document.createElement('div');
@@ -589,6 +602,13 @@ function renderHistoryPanel(container, items) {
     const row = document.createElement('div');
     row.className = 'hist-row' + (isPlaying ? ' playing' : '');
     row.dataset.url = url;
+    row.draggable = true;
+    row.addEventListener('dragstart', e => {
+      e.dataTransfer.effectAllowed = 'copy';
+      e.dataTransfer.setData('application/json', JSON.stringify({ name, url, favicon: item.favicon || '' }));
+      row.classList.add('dragging');
+    });
+    row.addEventListener('dragend', () => row.classList.remove('dragging'));
     row.innerHTML = `
       <div class="hist-logo-wrap">${logoHtml}</div>
       <div class="hist-info">
