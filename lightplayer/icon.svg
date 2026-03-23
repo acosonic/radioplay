@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="100" fill="#1a1a2e"/>
+  <circle cx="256" cy="256" r="100" fill="none" stroke="#7c6af5" stroke-width="28"/>
+  <circle cx="256" cy="256" r="40" fill="#7c6af5"/>
+  <!-- Radio waves left -->
+  <path d="M196 180 Q140 218 140 256 Q140 294 196 332" fill="none" stroke="#7c6af5" stroke-width="22" stroke-linecap="round"/>
+  <path d="M162 148 Q86 196 86 256 Q86 316 162 364" fill="none" stroke="#7c6af5" stroke-width="18" stroke-linecap="round" opacity="0.5"/>
+  <!-- Radio waves right -->
+  <path d="M316 180 Q372 218 372 256 Q372 294 316 332" fill="none" stroke="#7c6af5" stroke-width="22" stroke-linecap="round"/>
+  <path d="M350 148 Q426 196 426 256 Q426 316 350 364" fill="none" stroke="#7c6af5" stroke-width="18" stroke-linecap="round" opacity="0.5"/>
+</svg>
