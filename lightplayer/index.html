@@ -1189,10 +1189,23 @@ function playStation(station) {
   if (typeof IcecastMetadataPlayer !== 'undefined') {
     let started = false;
     icecastPlayer = new IcecastMetadataPlayer(station.url, {
-      onMetadata(m) { const t = m.StreamTitle || m.TITLE || ''; if (t) setNpTrack(t); },
-      onPlay()  { started = true; },
-      onStop()  { if (!started) startFallback(station); },
-      onError() { if (!started) { try { icecastPlayer?.stop(); } catch(e){} icecastPlayer = null; startFallback(station); } },
+      onMetadata(m) {
+        if (currentStation?.url !== station.url) return;
+        const t = m.StreamTitle || m.TITLE || '';
+        if (t) setNpTrack(t);
+      },
+      onPlay() { started = true; },
+      onStop() {
+        // Only fall back if this station is still the active one and it never started
+        if (!started && currentStation?.url === station.url) startFallback(station);
+      },
+      onError() {
+        if (!started && currentStation?.url === station.url) {
+          try { icecastPlayer?.stop(); } catch(e) {}
+          icecastPlayer = null;
+          startFallback(station);
+        }
+      },
     });
     try { icecastPlayer.play(); } catch(e) { icecastPlayer = null; startFallback(station); }
   } else {
