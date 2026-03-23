@@ -2,7 +2,7 @@
   "name": "LightPlayer",
   "short_name": "LightPlayer",
   "description": "Lightweight web radio player",
-  "start_url": "./lightplayer.html",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",

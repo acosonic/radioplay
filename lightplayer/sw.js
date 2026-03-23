@@ -1,6 +1,6 @@
 const CACHE = 'lightplayer-v1';
 const PRECACHE = [
-  './lightplayer.html',
+  './',
   './manifest.json',
   './icon.svg',
   'https://cdn.jsdelivr.net/npm/icecast-metadata-player@latest/build/icecast-metadata-player.min.js'
