@@ -552,6 +552,56 @@ body.day .station-meta .tag { background: rgba(80,70,229,0.15); color: #4030c0; 
 .btn-player-toggle:hover { background: rgba(108,99,255,0.15); color: var(--accent); }
 .btn-player-toggle svg { width: 16px; height: 16px; }
 
+/* ── Install banner ── */
+#install-banner {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  opacity: 0; transition: opacity 0.3s;
+  pointer-events: none;
+}
+#install-banner.show { opacity: 1; pointer-events: all; }
+.install-card {
+  background: var(--bg2);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 28px 24px 22px;
+  max-width: 360px; width: 100%;
+  text-align: center;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+  transform: translateY(16px); transition: transform 0.3s;
+}
+#install-banner.show .install-card { transform: translateY(0); }
+.install-icon { font-size: 48px; line-height: 1; margin-bottom: 12px; }
+.install-title { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+.install-desc  { font-size: 13px; color: var(--text2); line-height: 1.6; margin-bottom: 20px; }
+.install-ios   { font-size: 12px; color: var(--text2); line-height: 1.7; background: var(--glass); border: 1px solid var(--glass-border); border-radius: 10px; padding: 10px 14px; margin-bottom: 18px; text-align: left; }
+.install-ios b { color: var(--text); }
+.install-btns  { display: flex; gap: 10px; }
+.btn-install {
+  flex: 1;
+  background: linear-gradient(135deg, var(--accent), #8b80ff);
+  color: #fff; padding: 11px 0; border-radius: 10px;
+  font-size: 14px; font-weight: 700;
+}
+.btn-install:hover { opacity: 0.88; }
+.btn-install-later {
+  flex: 1;
+  background: var(--glass); border: 1px solid var(--glass-border);
+  color: var(--text2); padding: 11px 0; border-radius: 10px;
+  font-size: 14px; font-weight: 600;
+}
+.btn-install-later:hover { color: var(--text); border-color: rgba(255,255,255,0.25); }
+
+/* ── Scroll loader ── */
+.scroll-loader {
+  grid-column: 1/-1;
+  display: flex; justify-content: center; padding: 20px 0;
+}
+.scroll-sentinel { grid-column: 1/-1; height: 1px; }
+
 /* ── Toast ── */
 #toast {
   position: fixed;
@@ -603,6 +653,22 @@ body.day .station-meta .tag { background: rgba(80,70,229,0.15); color: #4030c0; 
   </style>
 </head>
 <body>
+
+<div id="install-banner">
+  <div class="install-card">
+    <div class="install-icon">📻</div>
+    <div class="install-title">Install LightPlayer</div>
+    <div class="install-desc">Add to your home screen for instant access to thousands of radio stations — works offline, no app store needed.</div>
+    <div class="install-ios" id="install-ios-hint" style="display:none">
+      Tap <b>Share</b> (□↑) at the bottom of Safari,<br>
+      then choose <b>Add to Home Screen</b>.
+    </div>
+    <div class="install-btns">
+      <button class="btn-install" id="btn-install">📲 Install</button>
+      <button class="btn-install-later" id="btn-install-later">Not now</button>
+    </div>
+  </div>
+</div>
 
 <header id="header">
   <div class="header-inner">
@@ -691,16 +757,6 @@ body.day .station-meta .tag { background: rgba(80,70,229,0.15); color: #4030c0; 
             <option value="128">128k+</option>
             <option value="192">192k+</option>
             <option value="320">320k+</option>
-          </select>
-        </div>
-        <div class="filter-pill" id="pill-limit">
-          <span class="pill-icon">📋</span>
-          <span class="pill-label" id="pill-limit-label">30 results</span>
-          <span class="pill-caret">▾</span>
-          <select id="filter-limit">
-            <option value="30">30 results</option>
-            <option value="60">60 results</option>
-            <option value="100">100 results</option>
           </select>
         </div>
       </div>
@@ -808,7 +864,6 @@ const pillCfg = [
   { pill: 'pill-genre',   select: 'filter-tag',     label: 'pill-genre-label',   default: 'Genre' },
   { pill: 'pill-country', select: 'filter-country',  label: 'pill-country-label', default: 'Country' },
   { pill: 'pill-quality', select: 'filter-quality',  label: 'pill-quality-label', default: 'Quality' },
-  { pill: 'pill-limit',   select: 'filter-limit',    label: 'pill-limit-label',   default: '30 results' },
 ];
 
 pillCfg.forEach(({ pill, select, label, default: def }) => {
@@ -833,41 +888,87 @@ async function rbFetch(path) {
   return res.json();
 }
 
-function buildQuery() {
+const BATCH = 30;
+
+function buildQuery(offset = 0) {
   const q       = document.getElementById('search-q').value.trim();
   const tag     = document.getElementById('filter-tag').value;
   const country = document.getElementById('filter-country').value;
   const quality = document.getElementById('filter-quality').value;
-  const limit   = document.getElementById('filter-limit').value || '30';
-  const p = new URLSearchParams({ limit, hidebroken: 'true', order: 'votes', reverse: 'true' });
-  if (q)                    p.set('name', q);
-  if (tag)                  p.set('tag', tag);
-  if (country)              p.set('countrycode', country);
+  const p = new URLSearchParams({ limit: BATCH, offset, hidebroken: 'true', order: 'votes', reverse: 'true' });
+  if (q)                         p.set('name', q);
+  if (tag)                       p.set('tag', tag);
+  if (country)                   p.set('countrycode', country);
   if (quality && quality !== '0') p.set('bitrateMin', quality);
   return p.toString();
+}
+
+// ── Endless scroll state ───────────────────────────────────────────────────
+let scrollOffset  = 0;
+let scrollLoading = false;
+let scrollDone    = false;
+let scrollObserver = null;
+let scrollIsHome  = false;
+
+function initScrollObserver(grid) {
+  if (scrollObserver) scrollObserver.disconnect();
+  const sentinel = document.createElement('div');
+  sentinel.className = 'scroll-sentinel';
+  grid.appendChild(sentinel);
+
+  scrollObserver = new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting && !scrollLoading && !scrollDone) loadMore(grid);
+  }, { root: document.getElementById('main'), rootMargin: '200px' });
+
+  scrollObserver.observe(sentinel);
+}
+
+async function loadMore(grid) {
+  if (scrollLoading || scrollDone) return;
+  scrollLoading = true;
+
+  const loader = document.createElement('div');
+  loader.className = 'scroll-loader';
+  loader.innerHTML = '<div class="spinner"></div>';
+  // Insert before sentinel
+  const sentinel = grid.querySelector('.scroll-sentinel');
+  grid.insertBefore(loader, sentinel);
+
+  try {
+    const path = scrollIsHome
+      ? `/stations/search?limit=${BATCH}&offset=${scrollOffset}&hidebroken=true&order=votes&reverse=true`
+      : `/stations/search?${buildQuery(scrollOffset)}`;
+    const data = await rbFetch(path);
+    loader.remove();
+
+    if (!data.length) {
+      scrollDone = true;
+      sentinel.remove();
+    } else {
+      renderCards(data, grid);
+      scrollOffset += data.length;
+      if (data.length < BATCH) { scrollDone = true; sentinel.remove(); }
+    }
+  } catch(e) {
+    loader.remove();
+    scrollDone = true;
+  }
+  scrollLoading = false;
 }
 
 // ── Home ───────────────────────────────────────────────────────────────────
 async function showHome() {
   document.getElementById('search-q').value = '';
-  // Reset pills
   pillCfg.forEach(({ select, label, pill, default: def }) => {
-    document.getElementById(select).value = select === 'filter-limit' ? '30' : '';
+    document.getElementById(select).value = '';
     document.getElementById(label).textContent = def;
     document.getElementById(pill).classList.remove('active');
   });
   setStatus('', '');
+  if (scrollObserver) scrollObserver.disconnect();
+  scrollOffset = 0; scrollLoading = false; scrollDone = false; scrollIsHome = true;
 
   const content = document.getElementById('content');
-  content.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
-
-  let stations = [];
-  try {
-    stations = await rbFetch('/stations/search?limit=40&hidebroken=true&order=votes&reverse=true');
-  } catch(e) {
-    setStatus('Could not load stations. Check your connection.', 'error');
-  }
-
   content.innerHTML = `
     <div class="home-wrap">
       <div class="section-label">Favourites</div>
@@ -875,7 +976,7 @@ async function showHome() {
       <div class="section-label">Browse by genre</div>
       <div class="tag-cloud">${HOME_TAGS.map(t => `<button class="tag-chip" data-tag="${escHtml(t)}">${escHtml(t)}</button>`).join('')}</div>
       <div class="section-label">Top stations</div>
-      <div class="station-grid" id="station-grid"></div>
+      <div class="station-grid" id="station-grid"><div class="scroll-loader" style="grid-column:1/-1"><div class="spinner"></div></div></div>
     </div>`;
 
   renderFavList();
@@ -888,7 +989,20 @@ async function showHome() {
     });
   });
 
-  renderCards(stations, document.getElementById('station-grid'));
+  const grid = document.getElementById('station-grid');
+  try {
+    const data = await rbFetch(`/stations/search?limit=${BATCH}&offset=0&hidebroken=true&order=votes&reverse=true`);
+    grid.querySelector('.scroll-loader')?.remove();
+    renderCards(data, grid);
+    scrollOffset = data.length;
+    if (data.length < BATCH) scrollDone = true;
+  } catch(e) {
+    grid.innerHTML = '';
+    setStatus('Could not load stations. Check your connection.', 'error');
+    scrollDone = true;
+  }
+
+  if (!scrollDone) initScrollObserver(grid);
 }
 
 function renderFavList() {
@@ -938,30 +1052,40 @@ function renderFavList() {
 
 // ── Search ─────────────────────────────────────────────────────────────────
 async function doSearch() {
-  const content = document.getElementById('content');
-  content.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+  if (scrollObserver) scrollObserver.disconnect();
+  scrollOffset = 0; scrollLoading = false; scrollDone = false; scrollIsHome = false;
   setStatus('', '');
 
-  try {
-    const data = await rbFetch('/stations/search?' + buildQuery());
-    content.innerHTML = '<div class="station-grid" id="station-grid"></div>';
-    const grid = document.getElementById('station-grid');
+  const content = document.getElementById('content');
+  content.innerHTML = '<div class="station-grid" id="station-grid"><div class="scroll-loader" style="grid-column:1/-1"><div class="spinner"></div></div></div>';
+  const grid = document.getElementById('station-grid');
 
-    const header = document.createElement('div');
-    header.className = 'results-header';
-    header.innerHTML = `<button class="btn-home-result" id="btn-back">← Home</button><span class="results-count">${data.length} station${data.length !== 1 ? 's' : ''}</span>`;
-    grid.appendChild(header);
-    header.querySelector('#btn-back').addEventListener('click', showHome);
+  const header = document.createElement('div');
+  header.className = 'results-header';
+  header.innerHTML = `<button class="btn-home-result" id="btn-back">← Home</button><span class="results-count" id="results-count"></span>`;
+  grid.prepend(header);
+  header.querySelector('#btn-back').addEventListener('click', showHome);
+
+  try {
+    const data = await rbFetch('/stations/search?' + buildQuery(0));
+    grid.querySelector('.scroll-loader')?.remove();
 
     if (!data.length) {
       grid.insertAdjacentHTML('beforeend', '<div style="grid-column:1/-1;color:var(--text2);padding:40px;text-align:center">No stations found.</div>');
+      scrollDone = true;
     } else {
       renderCards(data, grid);
+      scrollOffset = data.length;
+      document.getElementById('results-count').textContent = data.length + (data.length < BATCH ? '' : '+') + ' stations';
+      if (data.length < BATCH) scrollDone = true;
     }
   } catch(e) {
-    content.innerHTML = '';
+    grid.querySelector('.scroll-loader')?.remove();
     setStatus('Search failed. Check your connection.', 'error');
+    scrollDone = true;
   }
+
+  if (!scrollDone) initScrollObserver(grid);
 }
 
 // ── Render cards ───────────────────────────────────────────────────────────
@@ -1190,6 +1314,51 @@ function showToast(msg) {
   t.textContent = msg; t.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+// ── Install prompt ─────────────────────────────────────────────────────────
+let deferredInstallPrompt = null;
+const installBanner = document.getElementById('install-banner');
+const btnInstall    = document.getElementById('btn-install');
+const btnLater      = document.getElementById('btn-install-later');
+
+function showInstallBanner() {
+  if (sessionStorage.getItem('lp_install_dismissed')) return;
+  // Check if already installed (standalone mode)
+  if (window.matchMedia('(display-mode: standalone)').matches || navigator.standalone) return;
+  installBanner.classList.add('show');
+}
+
+function hideInstallBanner() {
+  installBanner.classList.remove('show');
+  sessionStorage.setItem('lp_install_dismissed', '1');
+}
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  // Small delay so the page content loads first
+  setTimeout(showInstallBanner, 1200);
+});
+
+btnInstall.addEventListener('click', async () => {
+  if (deferredInstallPrompt) {
+    deferredInstallPrompt.prompt();
+    const { outcome } = await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = null;
+    hideInstallBanner();
+  }
+});
+
+btnLater.addEventListener('click', hideInstallBanner);
+
+// iOS: beforeinstallprompt doesn't fire — show iOS instructions instead
+const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+if (isIos && isSafari && !navigator.standalone) {
+  document.getElementById('install-ios-hint').style.display = 'block';
+  btnInstall.style.display = 'none';
+  setTimeout(showInstallBanner, 1200);
 }
 
 // ── Boot ───────────────────────────────────────────────────────────────────
