@@ -13,6 +13,7 @@ let favorites = JSON.parse(localStorage.getItem('rp_favorites') || '{}');
 let history   = JSON.parse(localStorage.getItem('rp_history')   || '[]');
 let isDayMode = localStorage.getItem('rp_theme') !== 'night';
 let playbackMode = localStorage.getItem('rp_playback_mode') || 'browser';
+let playerOpen = localStorage.getItem('rp_player_open') !== 'false';
 
 // Migrate old favorites format {url: name} → {url: {name, url}}
 Object.keys(favorites).forEach(url => {
@@ -50,10 +51,12 @@ const btnTest       = document.getElementById('btn-test');
 const testModal     = document.getElementById('test-modal');
 const testModalBody = document.getElementById('test-modal-body');
 const btnTestClose  = document.getElementById('btn-test-close');
-const btnAbout      = document.getElementById('btn-about');
-const aboutModal    = document.getElementById('about-modal');
-const btnAboutClose = document.getElementById('btn-about-close');
-const audioEl       = document.getElementById('audio-player');
+const btnAbout        = document.getElementById('btn-about');
+const aboutModal      = document.getElementById('about-modal');
+const btnAboutClose   = document.getElementById('btn-about-close');
+const audioEl         = document.getElementById('audio-player');
+const playerBar       = document.getElementById('player-bar');
+const btnPlayerToggle = document.getElementById('btn-player-toggle');
 
 // ── Init ──
 document.addEventListener('DOMContentLoaded', () => {
@@ -61,6 +64,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   renderHome();
   initVolume();
+
+  if (btnPlayerToggle) {
+    btnPlayerToggle.addEventListener('click', () => {
+      playerOpen = !playerOpen;
+      localStorage.setItem('rp_player_open', String(playerOpen));
+      applyPlayerState();
+    });
+    applyPlayerState();
+  }
 
   btnHome.addEventListener('click', renderHome);
   btnSearch.addEventListener('click', doSearch);
@@ -94,6 +106,11 @@ document.addEventListener('DOMContentLoaded', () => {
   applyMode();
 });
 
+// ── Player bar toggle ──
+function applyPlayerState() {
+  playerBar.classList.toggle('player-collapsed', !playerOpen);
+}
+
 // ── Playback mode toggle ──
 async function toggleMode() {
   if (currentUrl) {
@@ -110,18 +127,24 @@ async function toggleMode() {
   applyMode();
 }
 
+// Paper Icon Theme — colored
+const monitorSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><g transform="translate(-285 235.003)"><path d="m 300.0002,-234 c 1,0 1,1 1,1 v 10 c 0,0 0,1 -1,1 h -14 c 0,0 -1,0 -1,-1 v -10 c 0,0 0,-1 1,-1 z m -0.99959,2 h -12 l -4.1e-4,8 12,-0.024 z m -3.00041,11 -2e-4,0.99664 h -6 l 2e-4,-0.99664 c 0,-1 1,-1 1,-1 h 4.02177 c 0,0 0.97823,0 0.97823,1 z" fill="#7c8cff"/></g></svg>';
+const speakerSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><g transform="translate(-445 195)"><path d="m 456.79,-187 c 0,-1.3 -0.72,-2.42 -1.79,-3 v 6 c 1.06,-0.58 1.79,-1.7 1.79,-3 z m -10.69889,-2.90909 v 5.81818 h 2.81818 L 453,-180 v -14 l -4.0908,4.09091 z M 455,-194 v 1.5 c 2.32,0.74 4,2.93 4,5.5 0,2.57 -1.68,4.76 -4,5.5 v 1.5 c 3.15,-0.78 5.5,-3.6 5.5,-7 0,-3.4 -2.35,-6.22 -5.5,-7 z" fill="#50c8e8"/></g></svg>';
+const moonSvg    = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path d="M14 8.53A6 6 0 1 1 7.47 2 4.67 4.67 0 0 0 14 8.53z" fill="#9090e8"/></svg>';
+const sunSvg     = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path d="m 353.0002,-494.28125 c -0.73799,0.72824 -1.44477,1.55677 -2.19141,2.28125 h -2.80859 v 2.80859 c -0.72459,0.74666 -1.55292,1.4535 -2.28125,2.19141 0.72849,0.73824 1.55656,1.47349 2.28125,2.22266 V -482 h 2.80664 c 0.74736,0.725 1.45473,1.55231 2.19336,2.28125 0.73886,-0.7291 1.47479,-1.55615 2.22461,-2.28125 h 2.77539 v -2.77734 c 0.72474,-0.74912 1.5527,-1.48443 2.28125,-2.22266 -0.72829,-0.73805 -1.5567,-1.44467 -2.28125,-2.19141 V -492 h -2.77734 c -0.74913,-0.72473 -1.48445,-1.55272 -2.22266,-2.28125 z m 0,3.28125 c 2.20914,0 4,1.79086 4,4 0,2.20914 -1.79086,4 -4,4 -2.20914,0 -4,-1.79086 -4,-4 0,-2.20914 1.79086,-4 4,-4 z m 0,1 a 3,3 0 0 0 -3,3 3,3 0 0 0 3,3 3,3 0 0 0 3,-3 3,3 0 0 0 -3,-3 z" fill="#f0c030" transform="translate(-345 495.003)"/></svg>';
+
 function applyMode() {
   if (playbackMode === 'server') {
     if (!statusInterval) {
       statusInterval = setInterval(fetchStatus, 5000);
       fetchStatus();
     }
-    btnMode.textContent = '🖥 Server';
+    btnMode.innerHTML = monitorSvg;
     btnMode.classList.add('active');
     btnMode.dataset.tooltip = '🖥 Server mode — active\n\nAudio plays via VLC on the server.\nVolume controls system output.\nGood for local / home listening.\n\nClick to switch to Browser mode.';
   } else {
     if (statusInterval) { clearInterval(statusInterval); statusInterval = null; }
-    btnMode.textContent = '🔊 Browser';
+    btnMode.innerHTML = speakerSvg;
     btnMode.classList.remove('active');
     btnMode.dataset.tooltip = '🔊 Browser mode — active\n\nAudio streams directly in your browser.\nVolume is local, max 100%.\nGood for remote / guest listening.\n\nClick to switch to Server mode.';
   }
@@ -408,6 +431,14 @@ function setPlaying(url, name, ts, favicon, type) {
     </div>`;
 
   waveform.classList.add('active');
+
+  // Auto-expand player bar on mobile when playback starts
+  if (window.matchMedia('(max-width: 600px)').matches && !playerOpen) {
+    playerOpen = true;
+    localStorage.setItem('rp_player_open', 'true');
+    applyPlayerState();
+  }
+
   startTimer();
   updateCardHighlights();
   refreshHistoryPanel();
@@ -647,7 +678,8 @@ function timeAgo(ts) {
 // ── Theme ──
 function applyTheme(day) {
   document.body.classList.toggle('day', day);
-  btnTheme.textContent = day ? '🌙' : '☀️';
+  btnTheme.innerHTML = day ? moonSvg : sunSvg;
+  btnTheme.dataset.tooltip = day ? 'Switch to night mode' : 'Switch to day mode';
 }
 
 // ── Volume ──

@@ -31,6 +31,30 @@ The selected mode is remembered across page reloads (`localStorage`).
 
 ---
 
+## Real-world Use Cases
+
+### ☕ Café / Bar background music
+
+This is where Server Mode shines. Place a small Linux box (Raspberry Pi, old laptop, mini-PC) behind the counter connected to your sound system. Install RadioPlay and point a browser at it.
+
+**Now anyone on the Wi-Fi can control the music from their phone:**
+
+1. Connect to the venue's Wi-Fi
+2. Open `http://192.168.x.x/radioplay` in a mobile browser
+3. Search for a station — jazz, lounge, chill, whatever fits the mood
+4. Tap **Play** — music starts playing through the venue's speakers instantly
+5. Adjust volume, switch stations, or play a YouTube set — all without touching the server
+
+No app to install. No accounts. No cable. The server keeps playing even after the phone's browser is closed — the stream runs on the machine itself via VLC.
+
+> Staff can switch the music between lunch and evening hours with two taps. Guests can suggest a track via YouTube. The morning playlist and the late-night vibe are just a search away.
+
+### 🏠 Home server
+
+Same idea at home — run RadioPlay on a NAS, home server, or always-on Raspberry Pi connected to a hi-fi or Bluetooth speaker. Control it from your phone or any browser on the network without needing to walk to the machine.
+
+---
+
 ## Screenshots
 
 **Search results** — dark mode, station grid with bitrate, genre tags, country flags and live status indicators:
