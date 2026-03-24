@@ -1,4 +1,5 @@
 {
+  "id": "lightplayer",
   "name": "LightPlayer",
   "short_name": "LightPlayer",
   "description": "Lightweight web radio player",

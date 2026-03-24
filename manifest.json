@@ -1,4 +1,5 @@
 {
+  "id": "radioplay",
   "name": "RadioPlay",
   "short_name": "RadioPlay",
   "description": "Self-hosted web radio & YouTube player",
