@@ -4,13 +4,16 @@
 <meta charset="UTF-8">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { background: #dde1f8; min-height: 100%; }
+html { background: #ffffff; }
 body {
   width: 500px; height: 500px; overflow: hidden;
-  background: linear-gradient(145deg, #eceffe 0%, #dde1f8 100%);
+  background: #ffffff;
   display: flex; align-items: center; justify-content: center;
 }
-.icon { font-size: 260px; line-height: 1; margin-top: 30px; }
+.icon {
+  font-size: 260px; line-height: 1; transform: translateY(-60px);
+  filter: drop-shadow(0px 18px 22px rgba(0,0,0,0.22)) drop-shadow(0px 6px 8px rgba(0,0,0,0.14));
+}
 </style>
 </head>
 <body><div class="icon">📻</div></body>
