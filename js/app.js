@@ -829,3 +829,32 @@ function renderTestResults(results) {
     : '<div class="test-summary fail">✗ Some tests failed — see details above<br><a class="test-install-link" href="https://github.com/acosonic/radioplay#installation" target="_blank">📖 View install instructions</a></div>';
   testModalBody.innerHTML = html;
 }
+
+// ── PWA: Service Worker + Install prompt ──
+const btnInstall = document.getElementById('btn-install');
+let deferredInstallPrompt = null;
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  btnInstall.classList.remove('hidden');
+});
+
+window.addEventListener('appinstalled', () => {
+  btnInstall.classList.add('hidden');
+  deferredInstallPrompt = null;
+});
+
+btnInstall.addEventListener('click', async () => {
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  const { outcome } = await deferredInstallPrompt.userChoice;
+  if (outcome === 'accepted') {
+    btnInstall.classList.add('hidden');
+    deferredInstallPrompt = null;
+  }
+});
