@@ -57,6 +57,27 @@ const btnAboutClose   = document.getElementById('btn-about-close');
 const audioEl         = document.getElementById('audio-player');
 const playerBar       = document.getElementById('player-bar');
 const btnPlayerToggle = document.getElementById('btn-player-toggle');
+const btnNpFav        = document.getElementById('btn-np-fav');
+
+let currentFavicon = '';
+let currentType    = 'radio';
+
+btnNpFav.addEventListener('click', () => {
+  if (!currentUrl) return;
+  const station = favorites[currentUrl]
+    ? null
+    : { name: currentName, url: currentUrl, favicon: currentFavicon, tags: '', country: '', countrycode: '' };
+  toggleFav(btnNpFav, currentUrl, station || currentName);
+  btnNpFav.textContent = favorites[currentUrl] ? '♥' : '♡';
+  btnNpFav.title = favorites[currentUrl] ? 'Remove from favorites' : 'Add to favorites';
+  document.querySelectorAll(`.station-card .btn-fav`).forEach(b => {
+    const card = b.closest('.station-card');
+    if (card && card.dataset.url === currentUrl)
+      b.classList.toggle('active', !!favorites[currentUrl]);
+  });
+  const fp = document.getElementById('panel-favorites-list');
+  if (fp) renderFavoritesPanel(fp);
+});
 
 // ── Init ──
 document.addEventListener('DOMContentLoaded', () => {
@@ -400,11 +421,19 @@ async function fetchMetadata() {
 
 // ── State helpers ──
 function setPlaying(url, name, ts, favicon, type) {
-  currentUrl  = url;
-  currentName = name;
-  startedAt   = ts;
+  currentUrl     = url;
+  currentName    = name;
+  currentFavicon = favicon || '';
+  currentType    = type || 'radio';
+  startedAt      = ts;
 
   btnStop.disabled = false;
+
+  btnNpFav.classList.remove('hidden');
+  const isFavNow = !!favorites[url];
+  btnNpFav.classList.toggle('active', isFavNow);
+  btnNpFav.textContent = isFavNow ? '♥' : '♡';
+  btnNpFav.title = isFavNow ? 'Remove from favorites' : 'Add to favorites';
 
   // Player bar favicon
   if (favicon) {
@@ -456,6 +485,8 @@ function clearPlaying() {
   startedAt   = null;
 
   btnStop.disabled = true;
+  btnNpFav.classList.add('hidden');
+  btnNpFav.classList.remove('active');
   npFavicon.classList.add('hidden');
   npFaviconPh.classList.remove('hidden');
   npFaviconPh.textContent = '♫';
@@ -512,6 +543,12 @@ function toggleFav(btn, url, station) {
     btn.classList.add('active');
   }
   saveFavorites();
+  if (url === currentUrl && btn !== btnNpFav) {
+    const isFavNow = !!favorites[url];
+    btnNpFav.classList.toggle('active', isFavNow);
+    btnNpFav.textContent = isFavNow ? '♥' : '♡';
+    btnNpFav.title = isFavNow ? 'Remove from favorites' : 'Add to favorites';
+  }
 }
 function saveFavorites() {
   localStorage.setItem('rp_favorites', JSON.stringify(favorites));
